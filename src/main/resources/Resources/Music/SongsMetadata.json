@@ -1,0 +1,33 @@
+{
+  "Albums": [
+    {
+      "Id": "DS1",
+      "Name": "Doodley Soundtrack, Vol. 1",
+      "Artist": "Jayfoo",
+      "ResourceInfo": {
+        "Author": "Jayfoo",
+        "Album": "VolumeOne"
+      },
+      "Songs": [
+        {
+          "Num": 1,
+          "Id": "CEM",
+          "Name": "Clementine",
+          "FileName": "Clementine.mp3"
+        },
+        {
+          "Num": 2,
+          "Id": "PER",
+          "Name": "Persimmon",
+          "FileName": "Persimmon.mp3"
+        },
+        {
+          "Num": 3,
+          "Id": "COC",
+          "Name": "Coconut",
+          "FileName": "Coconut.mp3"
+        }
+      ]
+    }
+  ]
+}

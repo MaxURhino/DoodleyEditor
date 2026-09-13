@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" stroke="none" viewBox="0 0 64 64" version="1.1">
+    <g transform="matrix(1,0,0,1,-0.167759,0.251638)">
+        <ellipse cx="17.615" cy="52.634" rx="9.562" ry="8.849"/>
+    </g>
+    <g transform="matrix(1,0,0,1,25.079948,-7.549148)">
+        <ellipse cx="17.615" cy="52.634" rx="9.562" ry="8.849"/>
+    </g>
+    <rect x="23.99" y="10.653" width="3.02" height="42.233"/>
+    <g transform="matrix(1,0,0,1,25.247706,-7.800786)">
+        <rect x="23.99" y="10.653" width="3.02" height="42.233"/>
+    </g>
+    <path d="M52.257,1.852L52.257,10.653L23.99,19.653L23.99,10.852L52.257,1.852Z"/>
+</svg>
