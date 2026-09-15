@@ -10,11 +10,23 @@ import java.util.List;
 import static org.lwjgl.opengl.GL11.*;
 
 public class TextRenderer {
-    public static void drawText(GLFont font, String text, float x, float y, Color color) {
+    public static void drawText(Font font, String text, float x, float y, Color color) {
         new TextDrawer(font, text, x, y, color).render();
     }
 
-    public static float getTextWidth(GLFont font, String text) {
+    public static void drawText(Font font, String text, TextPlacement textPlacement, TextPlacement.Placement hAlign, TextPlacement.Placement vAlign, Color color) {
+        drawText(
+                font,
+                text,
+                textPlacement.getX(hAlign),
+                textPlacement.getY(vAlign),
+                color
+        );
+    }
+
+    public static float getTextWidth(Font font, String text) {
+        if (font == null) return 0;
+
         float scale = font.getScale();
         float width = 0;
 
@@ -28,7 +40,7 @@ public class TextRenderer {
     }
 
     public record TextDrawer(
-            GLFont font,
+            Font font,
             String text,
             float x,
             float y,
@@ -37,6 +49,8 @@ public class TextRenderer {
 
         @Override
         public void render() {
+            if (this.font == null) return;
+
             float scale = font.getScale();
             float currentX = x;
             float baselineY = y + font.getLineHeight();

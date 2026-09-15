@@ -42,9 +42,17 @@ public class Paths {
         public static Path PNG(String path) {
             return plain("PNG/" + path + ".png");
         }
-
+        public static Path JPG(String path) {
+            return plain("JPG/" + path + ".jpg");
+        }
         public static Path SVG(String path) {
             return plain("SVG/" + path + ".svg");
         }
+    }
+
+    public static String getFileExtension(Path path) {
+        String file = path.getFileName().toString();
+
+        return file.substring(file.lastIndexOf('.') + 1);
     }
 }

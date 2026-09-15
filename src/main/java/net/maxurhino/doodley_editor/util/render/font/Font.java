@@ -8,6 +8,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.freetype.*;
 
 import java.io.IOException;
+import java.lang.ref.Reference;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,7 +20,7 @@ import java.util.Map;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.util.freetype.FreeType.*;
 
-public class GLFont implements Destroyable {
+public class Font implements Destroyable {
     private final Map<Character, Glyph> glyphs = new HashMap<>();
 
     private long library;
@@ -30,18 +31,19 @@ public class GLFont implements Destroyable {
 
     private final String path;
 
-    public GLFont(Path path, int size) {
+    public Font(Path path, int size) {
         this(path.toAbsolutePath().toString(), size);
     }
 
-    public GLFont(String path, int size) {
+    public Font(String path, int size) {
         this.path = path;
         this.size = size;
         load(path);
     }
 
+    private ByteBuffer fontBuffer;
+
     private void load(String path) {
-        ByteBuffer fontBuffer;
         try {
             Path filePath = Path.of(path);
             fontBuffer = BufferUtils.createByteBuffer((int) Files.size(filePath));
@@ -72,6 +74,10 @@ public class GLFont implements Destroyable {
 
     public float getScale() {
         return (float) size / unitsPerEm;
+    }
+
+    public float getTextWidth(String text) {
+        return TextRenderer.getTextWidth(this, text);
     }
 
     public int getLineHeight() {
@@ -108,31 +114,41 @@ public class GLFont implements Destroyable {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FT_Outline_Funcs funcs = FT_Outline_Funcs.calloc(stack);
 
-            funcs.move_to((to, _) -> {
+            FT_Outline_MoveToFuncI moveTo = (to, _) -> {
                 FT_Vector v = FT_Vector.create(to);
                 builder.moveTo(v.x(), v.y());
                 return 0;
-            });
-            funcs.line_to((to, _) -> {
+            };
+            FT_Outline_LineToFuncI lineTo = (to, _) -> {
                 FT_Vector v = FT_Vector.create(to);
                 builder.lineTo(v.x(), v.y());
                 return 0;
-            });
-            funcs.conic_to((control, to, _) -> {
+            };
+            FT_Outline_ConicToFuncI conicTo = (control, to, _) -> {
                 FT_Vector c = FT_Vector.create(control);
                 FT_Vector v = FT_Vector.create(to);
                 builder.conicTo(c.x(), c.y(), v.x(), v.y());
                 return 0;
-            });
-            funcs.cubic_to((control1, control2, to, _) -> {
+            };
+            FT_Outline_CubicToFuncI cubicTo = (control1, control2, to, _) -> {
                 FT_Vector c1 = FT_Vector.create(control1);
                 FT_Vector c2 = FT_Vector.create(control2);
                 FT_Vector v = FT_Vector.create(to);
                 builder.cubicTo(c1.x(), c1.y(), c2.x(), c2.y(), v.x(), v.y());
                 return 0;
-            });
+            };
+
+            funcs.move_to(moveTo);
+            funcs.line_to(lineTo);
+            funcs.conic_to(conicTo);
+            funcs.cubic_to(cubicTo);
 
             FT_Outline_Decompose(outline, funcs, NULL);
+
+            Reference.reachabilityFence(moveTo);
+            Reference.reachabilityFence(lineTo);
+            Reference.reachabilityFence(conicTo);
+            Reference.reachabilityFence(cubicTo);
         }
 
         return builder.contours;
@@ -183,13 +199,14 @@ public class GLFont implements Destroyable {
         return glyphs.get(c);
     }
 
-    public GLFont setSize(int size) {
-        return new GLFont(path, size);
+    public Font setSize(int size) {
+        return new Font(path, size);
     }
 
     @Override
     public void destroy() {
         FT_Done_Face(face);
         FT_Done_FreeType(library);
+        fontBuffer = null;
     }
 }

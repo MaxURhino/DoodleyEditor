@@ -2,7 +2,7 @@ package net.maxurhino.doodley_editor.util.render.font;
 
 import org.joml.Vector2f;
 
-public record TextPlacement(GLFont font, String text, Vector2f pos, Vector2f regionSize) {
+public record TextPlacement(Font font, String text, Vector2f pos, Vector2f regionSize) {
     public enum Placement {
         FIRST,
         SECOND,
@@ -10,6 +10,7 @@ public record TextPlacement(GLFont font, String text, Vector2f pos, Vector2f reg
     }
 
     public float getX(Placement placement) {
+        if (this.font == null) return pos.x;
         float textWidth = TextRenderer.getTextWidth(font, text);
         return switch (placement) {
             case FIRST -> pos.x;
@@ -19,6 +20,7 @@ public record TextPlacement(GLFont font, String text, Vector2f pos, Vector2f reg
     }
 
     public float getY(Placement placement) {
+        if (this.font == null) return pos.y;
         float textHeight = font.getLineHeight();
         return switch (placement) {
             case FIRST -> pos.y;

@@ -5,21 +5,18 @@ plugins {
 group = 'net.maxurhino.doodley_editor'
 version = '1.0-SNAPSHOT'
 
-project.ext.lwjglVersion = "3.4.3"
-project.ext.jomlVersion = "1.10.9"
-project.ext.joml_primitivesVersion = "1.10.0"
-project.ext.lwjglNatives = "natives-windows"
-
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation platform("org.junit:junit-bom:${project.junitBomVersion}")
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+    // [lwjgl]
+
+    implementation platform("org.lwjgl:lwjgl-bom:${project.lwjglVersion}")
 
     implementation "org.lwjgl:lwjgl"
     implementation "org.lwjgl:lwjgl-assimp"
@@ -28,28 +25,36 @@ dependencies {
     implementation "org.lwjgl:lwjgl-openal"
     implementation "org.lwjgl:lwjgl-opengl"
     implementation "org.lwjgl:lwjgl-stb"
-    implementation "org.lwjgl:lwjgl::$lwjglNatives"
-    implementation "org.lwjgl:lwjgl-assimp::$lwjglNatives"
-    implementation "org.lwjgl:lwjgl-freetype::$lwjglNatives"
-    implementation "org.lwjgl:lwjgl-glfw::$lwjglNatives"
-    implementation "org.lwjgl:lwjgl-openal::$lwjglNatives"
-    implementation "org.lwjgl:lwjgl-opengl::$lwjglNatives"
-    implementation "org.lwjgl:lwjgl-stb::$lwjglNatives"
-    implementation "org.joml:joml:${jomlVersion}"
-    implementation "org.joml:joml-primitives:${joml_primitivesVersion}"
+    implementation "org.lwjgl:lwjgl::${project.lwjglNatives}"
+    implementation "org.lwjgl:lwjgl-assimp::${project.lwjglNatives}"
+    implementation "org.lwjgl:lwjgl-freetype::${project.lwjglNatives}"
+    implementation "org.lwjgl:lwjgl-glfw::${project.lwjglNatives}"
+    implementation "org.lwjgl:lwjgl-openal::${project.lwjglNatives}"
+    implementation "org.lwjgl:lwjgl-opengl::${project.lwjglNatives}"
+    implementation "org.lwjgl:lwjgl-stb::${project.lwjglNatives}"
 
-    implementation ("org.apache.xmlgraphics:batik-transcoder:${project.batik_version}") {
+    // [maths]
+
+    implementation "org.joml:joml:${project.jomlVersion}"
+    implementation "org.joml:joml-primitives:${project.joml_primitivesVersion}"
+
+    // [image loading]
+
+    implementation ("org.apache.xmlgraphics:batik-transcoder:${project.batikVersion}") {
         exclude group: "xml-apis", module: "xml-apis"
     }
-    implementation ("org.apache.xmlgraphics:batik-codec:${project.batik_version}") {
+    implementation ("org.apache.xmlgraphics:batik-codec:${project.batikVersion}") {
         exclude group: "xml-apis", module: "xml-apis"
     }
 
-    implementation 'javazoom:jlayer:1.0.1'
+    implementation "javazoom:jlayer:${project.jlayerVersion}"
 
-    implementation 'com.google.code.gson:gson:2.14.0'
+    // [data loading]
+    implementation "com.google.code.gson:gson:${project.gsonVersion}"
+    implementation "org.yaml:snakeyaml:${project.snakeyamlVersion}"
 
-    implementation 'org.jspecify:jspecify:1.0.0'
+    // [annotations]
+    implementation "org.jspecify:jspecify:${project.jspecifyVersion}"
 }
 
 test {

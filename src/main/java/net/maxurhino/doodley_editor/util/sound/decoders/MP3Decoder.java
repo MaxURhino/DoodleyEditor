@@ -10,6 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import static org.lwjgl.system.MemoryUtil.memAlloc;
 import static org.lwjgl.openal.AL10.*;
 
 public class MP3Decoder extends net.maxurhino.doodley_editor.util.sound.decoders.Decoder {
@@ -54,7 +55,7 @@ public class MP3Decoder extends net.maxurhino.doodley_editor.util.sound.decoders
             }
 
             byte[] pcmBytes = pcmOut.toByteArray();
-            ByteBuffer pcm = ByteBuffer.allocateDirect(pcmBytes.length)
+            ByteBuffer pcm = memAlloc(pcmBytes.length)
                     .order(ByteOrder.nativeOrder());
             pcm.put(pcmBytes).flip();
 

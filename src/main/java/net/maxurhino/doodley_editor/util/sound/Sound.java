@@ -1,5 +1,6 @@
 package net.maxurhino.doodley_editor.util.sound;
 
+import net.maxurhino.doodley_editor.util.Paths;
 import net.maxurhino.doodley_editor.util.interfaces.Destroyable;
 
 import net.maxurhino.doodley_editor.util.commons.AudioDecoders;
@@ -7,7 +8,8 @@ import net.maxurhino.doodley_editor.util.sound.decoders.Decoder;
 
 import java.io.IOException;
 import java.nio.*;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.function.Supplier;
 
 import static org.lwjgl.openal.AL11.*;
@@ -19,17 +21,11 @@ public class Sound implements Destroyable {
     private float duration;
 
     public Sound(String path) {
-        this(Paths.get(path));
-    }
-
-    private String getFileExtension(Path path) {
-        String file = path.getFileName().toString();
-
-        return file.substring(file.lastIndexOf('.') + 1);
+        this(java.nio.file.Paths.get(path));
     }
 
     public Sound(Path path) {
-        String fileExtension = getFileExtension(path);
+        String fileExtension = Paths.getFileExtension(path);
         IO.println("Getting file extension: " + fileExtension);
         Supplier<? extends Decoder> decoder = AudioDecoders.decoders.get(fileExtension);
         Decoder.DecodedAudio audio;

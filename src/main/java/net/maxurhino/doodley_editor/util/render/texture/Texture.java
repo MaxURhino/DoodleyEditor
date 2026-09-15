@@ -1,18 +1,17 @@
 package net.maxurhino.doodley_editor.util.render.texture;
 
+import net.maxurhino.doodley_editor.util.Paths;
+import net.maxurhino.doodley_editor.util.commons.ImageLoaders;
 import net.maxurhino.doodley_editor.util.interfaces.Destroyable;
 import net.maxurhino.doodley_editor.util.render.enums.Filtering;
+import net.maxurhino.doodley_editor.util.render.texture.loaders.Loader;
 import org.joml.*;
-import org.lwjgl.system.MemoryStack;
 
 import java.awt.image.BufferedImage;
-import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
 
 import static org.lwjgl.opengl.GL33.*;
-import static org.lwjgl.stb.STBImage.*;
-import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class Texture implements Destroyable {
@@ -29,77 +28,38 @@ public class Texture implements Destroyable {
     }
 
     public Texture(Path path, Filtering filtering) {
-        this(path.toAbsolutePath().toString(), filtering);
+        this(loadImage(path), filtering);
+    }
+
+    private static BufferedImage loadImage(Path path) {
+        String fileExtension = Paths.getFileExtension(path);
+        if (!ImageLoaders.loaders.containsKey(fileExtension)) {
+            throw new IllegalArgumentException(path + " is not a valid image file extension");
+        }
+        Loader loader = ImageLoaders.loaders.get(fileExtension).get();
+        return loader.load(path);
     }
 
     public Texture(String path, Filtering filtering) {
-        ByteBuffer image;
-        int w, h;
+        this(java.nio.file.Paths.get(path), filtering);
+    }
 
-        try (MemoryStack stack = stackPush()) {
-            IntBuffer wBuf = stack.mallocInt(1);
-            IntBuffer hBuf = stack.mallocInt(1);
-            IntBuffer channelsBuf = stack.mallocInt(1);
+    public Texture(BufferedImage image, Filtering filtering) {
+        this.width = image.getWidth();
+        this.height = image.getHeight();
 
-            stbi_set_flip_vertically_on_load(true);
+        int[] pixels = image.getRGB(0, 0, this.width, this.height, null, 0, this.width);
 
-            image = stbi_load(path, wBuf, hBuf, channelsBuf, 4);
-            if (image == null) {
-                throw new RuntimeException("Failed to load texture \"" + path + "\": " + stbi_failure_reason());
-            }
+        IntBuffer buffer;
 
-            w = wBuf.get(0);
-            h = hBuf.get(0);
-        }
-
-        this.width = w;
-        this.height = h;
+        buffer = memAllocInt(pixels.length);
+        buffer.put(pixels).flip();
 
         this.id = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, this.id);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filtering.getId());
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filtering.getId());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, this.width, this.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-
-        stbi_image_free(image);
-    }
-
-    public Texture(BufferedImage image) {
-        this.width = image.getWidth();
-        this.height = image.getHeight();
-
-        int[] pixels = image.getRGB(0, 0, this.width, this.height, null, 0, this.width);
-
-        boolean shouldFlip = false;
-
-        IntBuffer buffer;
-
-        if (shouldFlip) {
-            int[] flipped = new int[pixels.length];
-            for (int y = 0; y < this.height; y++) {
-                System.arraycopy(
-                        pixels, y * this.width,
-                        flipped, (this.height - 1 - y) * this.width,
-                        this.width
-                );
-            }
-
-            buffer = memAllocInt(flipped.length);
-            buffer.put(flipped).flip();
-        } else {
-            buffer = memAllocInt(pixels.length);
-            buffer.put(pixels).flip();
-        }
-
-        this.id = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, this.id);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 

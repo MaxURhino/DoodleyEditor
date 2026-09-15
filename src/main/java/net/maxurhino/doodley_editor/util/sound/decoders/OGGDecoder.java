@@ -42,7 +42,7 @@ public class OGGDecoder extends Decoder {
             pcm.asShortBuffer().put(decodedPcm);
             pcm.rewind();
 
-            LibCStdlib.free(outputPtr);
+            LibCStdlib.free(decodedPcm);
 
             int format = channels == 1 ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16;
 

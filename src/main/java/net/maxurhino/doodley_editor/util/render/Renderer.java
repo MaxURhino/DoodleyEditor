@@ -1,8 +1,11 @@
 package net.maxurhino.doodley_editor.util.render;
 
 import net.maxurhino.doodley_editor.util.ColorUtil;
-import net.maxurhino.doodley_editor.util.render.font.GLFont;
+import net.maxurhino.doodley_editor.util.interfaces.Destroyable;
+import net.maxurhino.doodley_editor.util.render.font.Font;
+import net.maxurhino.doodley_editor.util.render.font.TextPlacement;
 import net.maxurhino.doodley_editor.util.render.font.TextRenderer;
+import net.maxurhino.doodley_editor.util.render.shader.WaveShader;
 import org.joml.*;
 import org.lwjgl.BufferUtils;
 
@@ -12,7 +15,7 @@ import java.nio.FloatBuffer;
 
 import static org.lwjgl.opengl.GL33.*;
 
-public class Renderer {
+public class Renderer implements Destroyable {
     private Color clearColor;
     private final net.maxurhino.doodley_editor.Window window;
     public final Draw draw;
@@ -96,18 +99,38 @@ public class Renderer {
         glDisable(GL_STENCIL_TEST);
     }
 
-    public static class Draw {
-        private final net.maxurhino.doodley_editor.Window window;
+    @Override
+    public void destroy() {
+        this.draw.destroy();
+    }
+
+    public static class Draw implements Destroyable {
         private final Renderer renderer;
+        private final WaveShader waveShader;
 
         public Draw(net.maxurhino.doodley_editor.Window window, Renderer renderer) {
-            this.window = window;
             this.renderer = renderer;
+
+            this.waveShader = new WaveShader();
         }
 
-        public void text(GLFont font, String text, Vector2f pos, Color color) {
+        public void wavyText(float time, float amplitude, float frequency, float speed, Font font, String text, Vector2f pos, Color color) {
+            waveShader.setTime(time);
+            waveShader.setAmplitude(amplitude);
+            waveShader.setFrequency(frequency);
+            waveShader.setSpeed(speed);
+
+            waveShader.render(() -> text(font, text, pos, color));
+        }
+
+        public void text(Font font, String text, Vector2f pos, Color color) {
             renderer.onRenderObject();
             TextRenderer.drawText(font, text, pos.x, pos.y, color);
+        }
+
+        public void text(Font font, String text, TextPlacement placement, TextPlacement.Placement hAlign, TextPlacement.Placement vAlign, Color color) {
+            renderer.onRenderObject();
+            TextRenderer.drawText(font, text, placement, hAlign, vAlign, color);
         }
 
         public void rect(Vector2f pos, Vector2f size, Color color) {
@@ -129,39 +152,6 @@ public class Renderer {
             glEnd();
         }
 
-        private void fillCircleShape(Vector2f center, float radius, int segments) {
-            glBegin(GL_TRIANGLE_FAN);
-
-            setVertexColor(Color.WHITE);
-
-            glVertex2f(center.x, center.y);
-
-            for (int i = 0; i <= segments; i++) {
-                double angle = 2.0 * Math.PI * i / segments;
-                float x = center.x + (float) Math.cos(angle) * radius;
-                float y = center.y + (float) Math.sin(angle) * radius;
-                glVertex2f(x, y);
-            }
-
-            glEnd();
-        }
-
-        public void circle(Vector2f center, float radius, int segments, Color color) {
-            renderer.onRenderObject();
-
-            renderer.beginMask(() -> fillCircleShape(center, radius, segments));
-            this.rect(
-                    new Vector2f(center).sub(radius, radius),
-                    new Vector2f(radius * 2, radius * 2),
-                    color
-            );
-            renderer.endMask();
-        }
-
-        public void circle(Vector2f center, float radius, Color color) {
-            this.circle(center, radius, 20, color);
-        }
-
         public void triangle(Vector2f pos1, Vector2f pos2, Vector2f pos3, Color color) {
             renderer.onRenderObject();
 
@@ -176,31 +166,68 @@ public class Renderer {
             glEnd();
         }
 
+        private void fillCircleShape(Vector2f center, float radius, int segments, float startAngleDeg, float endAngleDeg, Color color) {
+            glBegin(GL_TRIANGLE_FAN);
+
+            setVertexColor(color);
+
+            glVertex2f(center.x, center.y);
+
+            double startRad = Math.toRadians(startAngleDeg);
+            double endRad = Math.toRadians(endAngleDeg);
+
+            for (int i = 0; i <= segments; i++) {
+                double t = (double) i / segments;
+                double angle = startRad + t * (endRad - startRad);
+                float x = center.x + (float) Math.cos(angle) * radius;
+                float y = center.y + (float) Math.sin(angle) * radius;
+                glVertex2f(x, y);
+            }
+
+            glEnd();
+        }
+
+        public void circle(Vector2f center, float radius, int segments, Color color) {
+            renderer.onRenderObject();
+            fillCircleShape(center, radius, segments, 0, 360, color);
+        }
+
+        public void circle(Vector2f center, float radius, Color color) {
+            this.circle(center, radius, 20, color);
+        }
+
         public void roundedRect(Vector2f pos, Vector2f size, float radius, Color color) {
             renderer.onRenderObject();
 
-            this.renderer.beginMask(() -> {
-                fillCircleShape(new Vector2f(pos).add(radius, radius), radius, 20);
-                fillCircleShape(new Vector2f(pos).add(size.x - radius, radius), radius, 20);
-                fillCircleShape(new Vector2f(pos).add(radius, size.y - radius), radius, 20);
-                fillCircleShape(new Vector2f(pos).add(size.x - radius, size.y - radius), radius, 20);
+            fillCircleShape(new Vector2f(pos).add(radius, radius), radius, 20, 180, 270, color); // top-left
+            fillCircleShape(new Vector2f(pos).add(size.x - radius, radius), radius, 20, 270, 360, color); // top-right
+            fillCircleShape(new Vector2f(pos).add(size.x - radius, size.y - radius), radius, 20, 0, 90, color); // bottom-right
+            fillCircleShape(new Vector2f(pos).add(radius, size.y - radius), radius, 20, 90, 180, color); // bottom-left
 
-                // The straight rect() calls here are fine to keep as-is — they only
-                // ever draw a plain filled quad, they don't manage stencil state at all.
+            if (size.x > radius * 2) {
                 rect(
                         new Vector2f(pos).add(radius, 0),
-                        new Vector2f(size).sub(radius * 2, 0),
-                        Color.WHITE
+                        new Vector2f(size.x - radius * 2, size.y),
+                        color
                 );
+            }
+            if (size.y > radius * 2) {
                 rect(
                         new Vector2f(pos).add(0, radius),
-                        new Vector2f(size).sub(0, radius * 2),
-                        Color.WHITE
+                        new Vector2f(radius, size.y - radius * 2),
+                        color
                 );
-            });
+                rect(
+                        new Vector2f(pos).add(size.x - radius, radius),
+                        new Vector2f(radius, size.y - radius * 2),
+                        color
+                );
+            }
+        }
 
-            this.rect(pos, size, color);
-            this.renderer.endMask();
+        @Override
+        public void destroy() {
+            waveShader.destroy();
         }
     }
 }

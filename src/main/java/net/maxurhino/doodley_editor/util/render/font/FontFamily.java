@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 
 public class FontFamily implements Destroyable {
-    private final Map<String, GLFont> fonts;
+    private final Map<String, Font> fonts;
     private final String familyName;
     private final List<String> types;
     private final BiFunction<String, String, Path> fontPath;
@@ -26,7 +26,7 @@ public class FontFamily implements Destroyable {
 
             this.fonts.put(
                     type,
-                    new GLFont(path, size)
+                    new Font(path, size)
             );
         }
     }
@@ -43,7 +43,7 @@ public class FontFamily implements Destroyable {
         return new FontFamily(this.familyName, this.types, this.fontPath, size);
     }
 
-    public GLFont getStyle(String type) {
+    public Font getStyle(String type) {
         if (!this.fonts.containsKey(type)) {
             System.err.println("Font with type \"" + type + "\" not found.");
             System.out.println("Here are all the available fonts:" + this.fonts.keySet());
@@ -54,7 +54,7 @@ public class FontFamily implements Destroyable {
 
     @Override
     public void destroy() {
-        for (GLFont font : this.fonts.values()) {
+        for (Font font : this.fonts.values()) {
             font.destroy();
         }
     }

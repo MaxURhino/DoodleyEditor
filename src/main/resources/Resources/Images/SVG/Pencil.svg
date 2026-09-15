@@ -1,0 +1,17 @@
+<svg width="64" height="64" viewBox="0 0 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" fill="currentColor" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+    <g transform="matrix(0.754665,0.754665,-0.754665,0.754665,32,-16.298545)">
+        <path d="M32,60.813C27.051,55.619 26.464,50.244 26.464,50.244L26.303,6.962C26.303,6.962 28.869,2.488 32,2.349C35.131,2.488 37.697,6.962 37.697,6.962L37.536,50.244C37.536,50.244 36.949,55.619 32,60.813Z" style="fill:none;stroke-width:3.9px;"/>
+        <g transform="matrix(1,0,0,1,0,0.251638)">
+            <path d="M26.303,11.491L37.697,11.491" style="fill:none;stroke-width:2.93px;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,0,4.193971)">
+            <path d="M26.303,11.491L37.697,11.491" style="fill:none;stroke-width:2.93px;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,0,38.836173)">
+            <path d="M27.813,12.666L30.002,10.108L32,12.491L32,12.666L34.19,10.108L36.187,12.491" style="stroke-width:2.93px;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,0.083879,-0.503277)">
+            <rect x="29.861" y="56.451" width="4.11" height="2.6"/>
+        </g>
+    </g>
+</svg>
